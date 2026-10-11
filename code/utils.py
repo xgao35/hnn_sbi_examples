@@ -714,7 +714,127 @@ def hnn_erp_param_function(net, theta_dict):
     
     prox_exc_idx = pick_connection(net, src_gids='L5_pyramidal', target_gids='L5_pyramidal', receptor='ampa', loc='proximal')[0]
     net.connectivity[prox_exc_idx]['nc_dict']['A_weight'] = theta_dict['prox_exc']
-    
+
+def hnn_tep_param_function(net, theta_dict):
+    # NGFC 
+    net.add_ngfc_drive(
+        "ngfc",
+        mu=theta_dict['ngfc_latency'],
+        sigma=2.0,
+        numspikes=1,
+        n_drive_cells=1,
+        cell_specific=False,
+        space_constant=30,
+        weights_gabab={"L2_pyramidal": theta_dict['ngfc_weight'], 
+                        "L5_pyramidal": theta_dict['ngfc_weight']},
+        weights_gabaa={"L2_pyramidal": theta_dict['ngfc_weight'], 
+                        "L5_pyramidal": theta_dict['ngfc_weight']},
+        synapse_type="both",
+        synaptic_delays={"L2_pyramidal": 0.1, "L5_pyramidal": 0.1},
+    )
+    net.add_connection(src_gids='ngfc', target_gids="L2_inhibitory", loc='soma', receptor='gabaa', weight=0.0018, delay=0.1, lamtha=30)
+    net.add_connection(src_gids='ngfc', target_gids="L2_inhibitory", loc='soma', receptor='gabab', weight=2.2, delay=0.1, lamtha=30)
+
+    # Prox_1
+    net.add_evoked_drive(
+        'evprox_1',
+        mu=2, sigma=1, numspikes=2,
+        weights_ampa={
+                    "L2_pyramidal": theta_dict['prox_weight'],
+                    "L2_inhibitory": 0.0,
+                    "L5_pyramidal": theta_dict['prox_weight'],
+                    "L5_inhibitory": 0.0
+                },
+        weights_nmda={
+                    "L2_pyramidal": theta_dict['prox_weight'],
+                    "L2_inhibitory": 0.0,
+                    "L5_pyramidal": theta_dict['prox_weight'],
+                    "L5_inhibitory": 0.0
+                },
+        location='proximal',
+        synaptic_delays={'L2_pyramidal': 0.0, 'L2_inhibitory': 0.0, 'L5_pyramidal': 0.0, 'L5_inhibitory': 0.0},
+        event_seed=2
+        )
+
+    # Dist 1
+    net.add_evoked_drive('evdist_1',
+        mu=theta_dict['dist_latency'],
+        sigma=1.0040786,
+        numspikes=3,
+        location='distal',
+        weights_ampa={
+                    "L2_inhibitory": theta_dict['dist_weight'],
+                    "L2_pyramidal": theta_dict['dist_weight'],
+                    "L5_pyramidal": theta_dict['dist_weight']
+                },
+        weights_nmda={
+                    "L2_inhibitory": theta_dict['dist_weight'],
+                    "L2_pyramidal": theta_dict['dist_weight'],
+                    "L5_pyramidal": theta_dict['dist_weight']
+                },
+        synaptic_delays={'L2_inhibitory': 0.0, 'L2_pyramidal': 0.0, 'L5_pyramidal': 0.0},
+        event_seed=2
+        )   
+
+    # Dist 2
+    net.add_evoked_drive(
+        'evdist_2',
+        mu=40, sigma=4, numspikes=2,
+        weights_ampa={
+                    "L2_pyramidal": 0.018984928801093325,
+                    "L2_inhibitory": 0.15052363786020168,
+                    "L5_pyramidal": 9.789637964435858
+                },
+        weights_nmda={
+                    "L2_pyramidal": 0.005576462125845791,
+                    "L2_inhibitory": 1.6959592592068326e-11,
+                    "L5_pyramidal": 0.027870630480566802
+                },
+        location='distal',
+        synaptic_delays={'L2_pyramidal': 0.1, 'L2_inhibitory': 0.1, 'L5_pyramidal': 0.1},
+        event_seed=2,
+    )
+
+    # Prox 2
+    net.add_evoked_drive(
+        'evprox_2',
+        mu=75, sigma=5, numspikes=1,
+        weights_ampa={
+                    "L2_pyramidal": 0.020335511165424782,
+                    "L2_inhibitory": 5.3501704691082645e-14,
+                    "L5_pyramidal": 1.1431434608411582e-05,
+                    "L5_inhibitory": 1.0754305087991845e-08
+                },
+        weights_nmda={
+                    "L2_pyramidal": 1.0389516864474131e-05,
+                    "L2_inhibitory": 2.1210354882063435e-13,
+                    "L5_pyramidal": 1.329242898106314e-08,
+                    "L5_inhibitory": 2.8506437822504944e-09
+                },
+        location='proximal',
+        synaptic_delays={'L2_pyramidal': 0.1, 'L2_inhibitory': 0.1, 'L5_pyramidal': 1.0, 'L5_inhibitory': 1.0},
+        event_seed=2,
+    )
+
+    # Distal 3
+    net.add_evoked_drive(
+        'evdist_3',
+        mu=110, sigma=6, numspikes=1,
+        weights_ampa={
+                    "L2_pyramidal": 0.0018984928801093325,
+                    "L2_inhibitory": 6.020945514408068e-07,
+                    "L5_pyramidal": 0.1957927592887172
+                },
+        weights_nmda={
+                    "L2_pyramidal": 0.0011152924251691583,
+                    "L2_inhibitory": 1.6959592592068328e-12,
+                    "L5_pyramidal": 0.005574126096113361
+                },
+        location='distal',
+        synaptic_delays={'L2_pyramidal': 0.1, 'L2_inhibitory': 0.1, 'L5_pyramidal': 0.1},
+        event_seed=2,
+    )
+
 def load_prerun_simulations(x_files, theta_files, downsample=1, save_name=None, save_data=False):
     "Aggregate simulation batches into single array"
     
